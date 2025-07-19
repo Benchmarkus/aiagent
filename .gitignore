@@ -11,3 +11,4 @@ wheels/
 
 .env
 sandbox.py
+uv.lock
