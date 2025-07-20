@@ -3,6 +3,8 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from config import *
+from call_function import available_functions
 
 def main():
 
@@ -25,7 +27,8 @@ def main():
 
     response_object = client.models.generate_content(
         model="gemini-2.0-flash-001",
-        contents=messages
+        contents=messages,
+        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=SYSTEM_PROMPT)
         )
 
     response_text = response_object.text
@@ -35,9 +38,11 @@ def main():
     
     if is_verbose:
         print("User prompt:", prompt)
-        print(response_text)
         print("Prompt tokens:", prompt_tokens)
         print("Response tokens:", response_tokens)
+    
+    if len(response_object.function_calls) != 0:
+        print(f"Calling function: {response_object.function_calls[0].name}({response_object.function_calls[0].args})")
     else:
         print(response_text)
 

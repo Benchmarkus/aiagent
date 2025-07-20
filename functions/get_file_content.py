@@ -1,5 +1,7 @@
 import os
 from config import *
+from google import genai
+from google.genai import types
 
 def get_file_content(working_directory, filepath):
 
@@ -25,3 +27,17 @@ def get_file_content(working_directory, filepath):
             result = content
 
     return result
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Returns a string that is the contents of the called file, constrained to the working directory. If file size is over 10000 characters, the output is truncated.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "filepath": types.Schema(
+                type=types.Type.STRING,
+                description="The file whose content is to be returned by the function. For example 'main.py'.",
+            ),
+        },
+    ),
+)
