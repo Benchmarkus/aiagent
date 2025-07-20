@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from config import *
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def main():
 
@@ -19,9 +19,9 @@ def main():
         sys.exit(1)
     
     try:
-        is_verbose = sys.argv[2] == "--verbose"
+        verbose = sys.argv[2] == "--verbose"
     except IndexError:
-        is_verbose = False
+        verbose = False
 
     messages = [types.Content(role="user", parts=[types.Part(text=prompt)])]
 
@@ -36,15 +36,24 @@ def main():
     response_tokens = response_object.usage_metadata.candidates_token_count
 
     
-    if is_verbose:
+    if verbose:
         print("User prompt:", prompt)
         print("Prompt tokens:", prompt_tokens)
         print("Response tokens:", response_tokens)
     
-    if len(response_object.function_calls) != 0:
-        print(f"Calling function: {response_object.function_calls[0].name}({response_object.function_calls[0].args})")
-    else:
+    if not response_object.function_calls:
         print(response_text)
+
+    for function_call_part in response_object.function_calls:
+        # print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+        function_call_result = call_function(function_call_part, verbose)
+        
+        try:
+            if function_call_result.parts[0].function_response.response and verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response["result"]}")
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
